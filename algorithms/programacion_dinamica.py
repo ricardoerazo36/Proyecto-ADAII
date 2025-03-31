@@ -1,32 +1,61 @@
 import numpy as np
 
 def modciPD(red_social):
-    n = len(red_social.agentes)
+    """
+    Algoritmo de programación dinámica para el problema ModCI
+    Retorna: (estrategia_optima, esfuerzo, conflicto_interno)
+    """
+    n = red_social.n
     r_max = red_social.r_max
     
-    # Matriz DP para minimizar el conflicto interno con un presupuesto r_max
+    # Inicializamos la tabla de PD
+    # dp[i][r] representa el mínimo conflicto posible considerando los primeros i grupos
+    # con un presupuesto máximo de r
     dp = [[float('inf')] * (r_max + 1) for _ in range(n + 1)]
-    estrategia = [[0] * n for _ in range(r_max + 1)]
     
-    dp[0][0] = 0  # Sin recursos, sin agentes cambiados
-
+    # Caso base: sin grupos, conflicto es 0
+    for r in range(r_max + 1):
+        dp[0][r] = 0
+    
+    # Matriz para reconstruir la solución
+    decisiones = [[-1] * (r_max + 1) for _ in range(n + 1)]
+    
+    # Llenamos la tabla DP
     for i in range(1, n + 1):
-        n_agentes, op1, op2, rig = red_social.agentes[i - 1]
+        grupo_idx = i - 1
+        n_agentes, op1, op2, rigidez = red_social.grupos[grupo_idx]
+        diferencia_op = abs(op1 - op2)
+        
         for r in range(r_max + 1):
-            dp[i][r] = dp[i - 1][r]  # No cambiar ningún agente en este grupo
+            # Opción 1: No moderar ningún agente de este grupo
+            dp[i][r] = dp[i-1][r] + n_agentes * (diferencia_op ** 2)
+            decisiones[i][r] = 0
             
-            for e in range(n_agentes + 1):  # Evaluamos cambiar desde 0 hasta n_agentes
-                esfuerzo = np.ceil(abs(op1 - op2) * rig * e)
-                if r >= esfuerzo and dp[i - 1][r - int(esfuerzo)] + e < dp[i][r]:
-                    dp[i][r] = dp[i - 1][r - int(esfuerzo)] + e
-                    estrategia[r][i - 1] = e
-
-    # Reconstrucción de la mejor estrategia
-    mejor_estrategia = [0] * n
-    r = r_max
-    for i in range(n, 0, -1):
-        mejor_estrategia[i - 1] = estrategia[r][i - 1]
-        r -= int(np.ceil(abs(red_social.agentes[i - 1][1] - red_social.agentes[i - 1][2]) * red_social.agentes[i - 1][3] * mejor_estrategia[i - 1]))
+            # Opción 2: Moderar k agentes (1 <= k <= n_agentes)
+            for k in range(1, n_agentes + 1):
+                esfuerzo = int(np.ceil(diferencia_op * rigidez * k))
+                
+                if r >= esfuerzo:
+                    # Calculamos el conflicto si moderamos k agentes
+                    nuevo_conflicto = dp[i-1][r - esfuerzo] + (n_agentes - k) * (diferencia_op ** 2)
+                    
+                    if nuevo_conflicto < dp[i][r]:
+                        dp[i][r] = nuevo_conflicto
+                        decisiones[i][r] = k
     
-    nueva_red = red_social.aplicar_estrategia(mejor_estrategia)
-    return mejor_estrategia, red_social.esfuerzo_necesario(mejor_estrategia), nueva_red.calcular_conflicto()
+    # Reconstruimos la estrategia óptima
+    estrategia = [0] * n
+    r_restante = r_max
+    
+    for i in range(n, 0, -1):
+        estrategia[i-1] = decisiones[i][r_restante]
+        if estrategia[i-1] > 0:
+            n_agentes, op1, op2, rigidez = red_social.grupos[i-1]
+            esfuerzo = int(np.ceil(abs(op1 - op2) * rigidez * estrategia[i-1]))
+            r_restante -= esfuerzo
+    
+    # Ajustamos el conflicto para reflejar la división por el número total de agentes
+    total_agentes = sum(grupo[0] for grupo in red_social.grupos)
+    conflicto_ajustado = dp[n][r_max] / total_agentes
+    
+    return (estrategia, red_social.calcular_esfuerzo(estrategia), conflicto_ajustado)

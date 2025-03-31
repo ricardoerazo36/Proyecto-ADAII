@@ -1,17 +1,47 @@
 import numpy as np
 
 def modciV(red_social):
-    # Ordenamos los grupos por |op1 - op2| * rigidez en orden descendente
-    agentes_ordenados = sorted(enumerate(red_social.agentes), key=lambda x: abs(x[1][1] - x[1][2]) * x[1][3], reverse=True)
+    """
+    Algoritmo voraz para el problema ModCI.
+    Estrategia: Priorizar grupos con mayor diferencia de opiniones y menor rigidez
+    Retorna: (estrategia_optima, esfuerzo, conflicto_interno)
+    """
+    n = red_social.n
+    estrategia = [0] * n
+    r_max_restante = red_social.r_max
     
-    estrategia = [0] * len(red_social.agentes)
-    recursos_disponibles = red_social.r_max
+    # Calculamos el beneficio por unidad de esfuerzo para cada grupo
+    beneficios = []
+    for i in range(n):
+        n_agentes, op1, op2, rigidez = red_social.grupos[i]
+        
+        if rigidez == 0:  # Evitar división por cero
+            beneficio = float('inf')
+        else:
+            # Beneficio = reducción en conflicto por unidad de esfuerzo
+            diferencia_op = abs(op1 - op2)
+            beneficio = (diferencia_op ** 2) / (diferencia_op * rigidez)
+        
+        beneficios.append((i, beneficio, n_agentes))
     
-    for i, (n, op1, op2, rig) in agentes_ordenados:
-        if recursos_disponibles > 0:
-            max_cambio = min(n, recursos_disponibles // np.ceil(abs(op1 - op2) * rig))
-            estrategia[i] = max_cambio
-            recursos_disponibles -= np.ceil(abs(op1 - op2) * rig * max_cambio)
+    # Ordenamos por beneficio descendente
+    beneficios.sort(key=lambda x: x[1], reverse=True)
     
+    # Asignamos recursos de forma voraz
+    for i, beneficio, max_agentes in beneficios:
+        n_agentes, op1, op2, rigidez = red_social.grupos[i]
+        diferencia_op = abs(op1 - op2)
+        
+        # Calculamos cuántos agentes podemos moderar con el r_max restante
+        esfuerzo_por_agente = np.ceil(diferencia_op * rigidez)
+        max_modificables = min(max_agentes, r_max_restante // max(1, esfuerzo_por_agente))
+        
+        # Actualizamos la estrategia y el r_max restante
+        estrategia[i] = max_modificables
+        r_max_restante -= int(max_modificables * esfuerzo_por_agente)
+    
+    # Calculamos el conflicto interno resultante
     nueva_red = red_social.aplicar_estrategia(estrategia)
-    return estrategia, red_social.esfuerzo_necesario(estrategia), nueva_red.calcular_conflicto()
+    conflicto = nueva_red.calcular_conflicto_interno()
+    
+    return (estrategia, red_social.calcular_esfuerzo(estrategia), conflicto)
