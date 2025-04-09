@@ -11,56 +11,20 @@ class UIManager:
         self.root = root
         self.current_theme = "light"
         
-        # Definir temas
-        self.themes = {
-            "light": {
-                "bg": "#f5f5f5",
-                "fg": "#333333",
-                "primary": "#3366cc",
-                "secondary": "#6699cc",
-                "accent": "#ff6633",
-                "success": "#66cc99",
-                "warning": "#ffcc33",
-                "error": "#ff3366",
-                "text_bg": "white",
-                "border": "#dddddd"
-            },
-            "dark": {
-                "bg": "#2d2d2d",
-                "fg": "#f5f5f5",
-                "primary": "#5588ee",
-                "secondary": "#88aaee",
-                "accent": "#ff8855",
-                "success": "#77ddaa",
-                "warning": "#ffdd55",
-                "error": "#ff5577",
-                "text_bg": "#383838",
-                "border": "#555555"
-            },
-            "blue": {
-                "bg": "#e6f0ff",
-                "fg": "#333333",
-                "primary": "#1a53ff",
-                "secondary": "#4d79ff",
-                "accent": "#ff6633",
-                "success": "#33cc66",
-                "warning": "#ffcc00",
-                "error": "#ff3366",
-                "text_bg": "white",
-                "border": "#b3d1ff"
-            }
+        # Definir tema único (claro)
+        self.theme = {
+            "bg": "#f5f5f5",
+            "fg": "#333333",
+            "text_bg": "white",
+            "border": "#dddddd"
         }
         
-        # Configurar el tema inicial
-        self.apply_theme("light")
+        # Configurar el tema
+        self.apply_theme()
     
-    def apply_theme(self, theme_name):
-        """Aplica un tema a la aplicación"""
-        if theme_name not in self.themes:
-            return
-        
-        self.current_theme = theme_name
-        theme = self.themes[theme_name]
+    def apply_theme(self):
+        """Aplica el tema a la aplicación"""
+        theme = self.theme
         
         # Configurar fuentes
         default_font = font.nametofont("TkDefaultFont")
@@ -82,46 +46,13 @@ class UIManager:
         # Label
         style.configure("TLabel", background=theme["bg"], foreground=theme["fg"])
         
-        # Button - Corrección de los botones para que se vean adecuadamente
-        style.configure("TButton", 
-                        background=theme["primary"], 
-                        foreground="white", 
-                        padding=(10, 5),
-                        relief="raised")
-                        
-        # Importante: usar map para definir los estados del botón
-        style.map("TButton",
-                 background=[("active", theme["secondary"]), ("pressed", theme["primary"])],
-                 foreground=[("active", "white"), ("pressed", "white")],
-                 relief=[("pressed", "sunken"), ("active", "raised")])
+        # Botones simplificados
+        style.configure("TButton", padding=(5, 2))
         
-        # Estilos específicos para botones
-        style.configure("Primario.TButton", 
-                        background=theme["primary"], 
-                        foreground="white",
-                        padding=(10, 5))
-        style.map("Primario.TButton",
-                  background=[("active", theme["secondary"]), ("pressed", theme["primary"])],
-                  foreground=[("active", "white"), ("pressed", "white")],
-                  relief=[("pressed", "sunken"), ("active", "raised")])
-        
-        style.configure("Secundario.TButton", 
-                        background=theme["secondary"], 
-                        foreground="white",
-                        padding=(10, 5))
-        style.map("Secundario.TButton",
-                  background=[("active", theme["primary"]), ("pressed", theme["secondary"])],
-                  foreground=[("active", "white"), ("pressed", "white")],
-                  relief=[("pressed", "sunken"), ("active", "raised")])
-        
-        style.configure("Acento.TButton", 
-                        background=theme["accent"], 
-                        foreground="white",
-                        padding=(10, 5))
-        style.map("Acento.TButton",
-                  background=[("active", "#ff8866"), ("pressed", theme["accent"])],
-                  foreground=[("active", "white"), ("pressed", "white")],
-                  relief=[("pressed", "sunken"), ("active", "raised")])
+        # Mantener los estilos específicos pero con aspecto sencillo
+        style.configure("Primario.TButton", padding=(5, 2))
+        style.configure("Secundario.TButton", padding=(5, 2))
+        style.configure("Acento.TButton", padding=(5, 2))
         
         # Configuración global
         self.root.configure(background=theme["bg"])
@@ -131,7 +62,7 @@ class UIManager:
             "bg": theme["text_bg"],
             "fg": theme["fg"],
             "font": ("Consolas", 10),
-            "selectbackground": theme["primary"],
+            "selectbackground": "#a6a6a6",
             "selectforeground": "white",
             "borderwidth": 1,
             "relief": "solid",
@@ -140,14 +71,7 @@ class UIManager:
         
         return self.text_config
     
-    def toggle_theme(self):
-        """Cambia entre temas disponibles"""
-        themes = list(self.themes.keys())
-        current_index = themes.index(self.current_theme)
-        next_index = (current_index + 1) % len(themes)
-        next_theme = themes[next_index]
-        
-        return self.apply_theme(next_theme)
+    # Método toggle_theme eliminado ya que no será necesario
     
     def get_text_config(self):
         """Devuelve la configuración para widgets de texto"""

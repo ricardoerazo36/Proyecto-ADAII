@@ -166,10 +166,6 @@ class ModCIApp:
         alg_menu.add_separator()
         alg_menu.add_command(label="Comparar algoritmos", command=self.comparar_algoritmos)
         
-        # Menú Ver
-        view_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Ver", menu=view_menu)
-        view_menu.add_command(label="Cambiar tema", command=self.cambiar_tema)
         
         # Menú Ayuda
         help_menu = tk.Menu(menubar, tearoff=0)
@@ -177,13 +173,7 @@ class ModCIApp:
         help_menu.add_command(label="Acerca de", command=self.mostrar_acerca_de)
         help_menu.add_command(label="Documentación", command=self.mostrar_documentacion)
     
-    def cambiar_tema(self):
-        """Cambia el tema de la aplicación"""
-        self.text_config = self.ui_manager.toggle_theme()
-        self.txt_red.configure(**self.text_config)
-        self.txt_resultados.configure(**self.text_config)
-        self.statusbar.config(text=f"Tema cambiado a: {self.ui_manager.get_current_theme()}")
-    
+        
     def mostrar_acerca_de(self):
         """Muestra información sobre la aplicación"""
         messagebox.showinfo(
