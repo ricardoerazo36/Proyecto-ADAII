@@ -6,6 +6,7 @@ def modciFB(red_social):
     n = red_social.n
     mejor_estrategia = None
     mejor_conflicto = float('inf')
+   
     
     # Función recursiva para generar todas las posibles estrategias
     def generar_estrategias(estrategia_actual, indice):

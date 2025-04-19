@@ -19,6 +19,9 @@ from utils.ui_theme_utils import UIManager, create_tooltip, create_button, setup
 from utils.file_manager import cargar_red_social, guardar_resultado, guardar_caso_prueba
 from utils.test_generator import generar_caso_prueba
 
+conflicto_real = 0.0
+conflicto_numerador = 0.0
+
 class ModCIApp:
     def __init__(self, root):
         self.root = root
@@ -356,7 +359,7 @@ class ModCIApp:
             # Mostramos los resultados
             self.mostrar_resultados(estrategia, esfuerzo, conflicto, nombre_algoritmo, fin - inicio)
             
-            self.resultado_actual = (estrategia, esfuerzo, conflicto)
+            #self.resultado_actual = (estrategia, esfuerzo, conflicto)      # Se deja comentado pues se necesita el CI de red y aqui se exportaria el grupal
             self.statusbar.config(text=f"Algoritmo {nombre_algoritmo} completado en {fin - inicio:.4f} segundos")
         except Exception as e:
             messagebox.showerror("Error", f"Error al ejecutar el algoritmo {nombre_algoritmo}: {str(e)}")
@@ -375,11 +378,23 @@ class ModCIApp:
         self.ejecutar_algoritmo(modciPD, "Programación Dinámica")
     
     def mostrar_resultados(self, estrategia, esfuerzo, conflicto, nombre_algoritmo, tiempo):
+        global conflicto_numerador, conflicto_real
+        conflicto_numerador = 0.0       # Se inicializan en cada llamado para que no acumule los conflictos en todos los algoritmos
+        conflicto_real = 0.0
         """Muestra los resultados de un algoritmo en el área de texto"""
         self.txt_resultados.delete(1.0, tk.END)
+
+        # Calculando el conflicto interno de red
+        for i, mod in enumerate(estrategia):
+            n_agentes = self.red_social.grupos[i][0]
+            conflicto_numerador += (n_agentes - mod) * (self.red_social.grupos[i][1] - self.red_social.grupos[i][2])**2
+
+        conflicto_real = conflicto_numerador / self.red_social.n
         
+        self.resultado_actual = (estrategia, esfuerzo, conflicto_real)      # Aqui se asigna el conflicto de red al CI del resultado actual para poder exportar el txt
+
         resultado = f"Resultados del algoritmo {nombre_algoritmo} (tiempo: {tiempo:.4f} segundos)\n"
-        resultado += f"Conflicto interno: {conflicto:.2f}\n"
+        resultado += f"Conflicto interno: {conflicto_real:.2f}\n"
         resultado += f"Esfuerzo: {esfuerzo}\n"
         resultado += f"Estrategia:\n"
         
@@ -387,6 +402,8 @@ class ModCIApp:
         for i, mod in enumerate(estrategia):
             n_agentes = self.red_social.grupos[i][0]
             resultado += f"  Grupo {i+1}: moderar {mod} de {n_agentes} agentes\n"
+
+            conflicto_numerador += (n_agentes - mod) * (self.red_social.grupos[i][1] - self.red_social.grupos[i][2])**2
         
         self.txt_resultados.insert(tk.END, resultado)
     
