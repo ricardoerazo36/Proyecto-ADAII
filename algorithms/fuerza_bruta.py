@@ -1,12 +1,12 @@
 def modciFB(red_social):
     """
     Algoritmo de fuerza bruta para el problema ModCI
-    Explora todas las posibles combinaciones de agentes a moderar
     Retorna: (estrategia_optima, esfuerzo, conflicto_interno)
     """
     n = red_social.n
     mejor_estrategia = None
     mejor_conflicto = float('inf')
+   
     
     # Función recursiva para generar todas las posibles estrategias
     def generar_estrategias(estrategia_actual, indice):
@@ -33,10 +33,9 @@ def modciFB(red_social):
     estrategia_inicial = [0] * n
     generar_estrategias(estrategia_inicial, 0)
     
-    # Si no encontramos ninguna estrategia aplicable, usamos la estrategia vacía
+    # Si no encontramos ninguna estrategia aplicable
     if mejor_estrategia is None:
         mejor_estrategia = [0] * n
-        mejor_conflicto = red_social.calcular_conflicto_interno()
     
     esfuerzo = red_social.calcular_esfuerzo(mejor_estrategia)
     return (mejor_estrategia, esfuerzo, mejor_conflicto)
