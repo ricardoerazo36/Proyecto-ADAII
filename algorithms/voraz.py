@@ -20,7 +20,7 @@ def modciV(red_social):
         else:
             # Beneficio = reducción en conflicto por unidad de esfuerzo
             diferencia_op = abs(op1 - op2)
-            beneficio = (diferencia_op ** 2) / (diferencia_op * rigidez)
+            beneficio = (diferencia_op ** 2) /  (diferencia_op * rigidez)
         
         beneficios.append((i, beneficio, n_agentes))
     
