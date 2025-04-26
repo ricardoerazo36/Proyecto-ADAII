@@ -31,7 +31,7 @@ ui_theme_utils.py: Contiene utilidades para gestionar la interfaz de usuario y l
 Requisitos
 Para ejecutar la aplicación necesitarás:
 Python 3.6 o superior
-Bibliotecas: tkinter, numpy
+Bibliotecas: tkinter, numpy , functools
 
 Ejecución de la Aplicación
 Para ejecutar la aplicación, simplemente ejecuta el archivo main.py
